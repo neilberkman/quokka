@@ -26,8 +26,7 @@ This addresses [`Credo.Check.Readability.LargeNumbers`](https://hexdocs.pm/credo
 Style base 10 numbers with 5 or more digits to have a `_` every three digits.
 Formatter already does this except it doesn't rewrite "typos" like `100_000_0`.
 
-If you're concerned that this breaks your team's formatting for things like "cents" (like "$100" being written as `100_00`),
-consider using a library made for denoting currencies rather than raw elixir integers.
+If you're concerned that this breaks your team's formatting for things like "cents" (like "$100" being written as `100_00`), add `:nums_with_underscores` to the `:exclude` config.
 
 | Before             | After                                                 |
 | ------------------ | ----------------------------------------------------- |
@@ -58,9 +57,19 @@ if enum |> MyModule.transform() |> Enum.empty?(), do: "empty"
 if Enum.count(enum) > 0, do: "not empty"
 # Styled:
 if not Enum.empty?(enum), do: "not empty"
+
+# Given:
+if Enum.count(enum, &my_func) == 0, do: "none"
+# Styled:
+if not Enum.any?(enum, &my_func), do: "none"
+
+# Given:
+if 0 < foo |> bar() |> Enum.count(fn v -> baz(v) end), do: "not none"
+# Styled:
+if foo |> bar() |> Enum.any(fn v -> baz(v) end), do: "not none"
 ```
 
-Note that while Quokka will rewrite the calls to `length/1` or `Enum.count/1` even in pipes when the result is being checked for equality against zero, it will not rewrite pipes if they're being checked for being greater than zero. (Quokka avoids either wrapping the whole pipe chain in a `not` or piping into `Kernel.not/1`.)
+Note that while Quokka will rewrite the calls to `length/1` or `Enum.count/1` even in pipes when the result is being checked for equality against zero, it will not rewrite pipes if they're being checked for being greater than zero. Similarly, it will not rewrite pipes for `Enum.count/2` if its being checked against zero. (Quokka avoids either wrapping the whole pipe chain in a `not` or piping into `Kernel.not/1`.)
 
 ```elixir
 # Given:
